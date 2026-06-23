@@ -1,0 +1,22 @@
+SELECT
+    p.pais,
+    p.clave_territorio,
+    SUM(p.ingresos)::integer AS ingresos,
+    SUM(p.costos)::integer AS costos,
+    COALESCE(SUM(c.costo_campana), 0)::integer AS costo_campana,
+
+SUM(p.ingresos)::integer-SUM(p.costos)::integer as beneficio_bruto,
+((SUM(p.ingresos)-SUM(p.costos))*100.0) /NULLIF(SUM(p.ingresos),0) as margen_pct, 
+
+((SUM(p.ingresos)-SUM(p.costos))*100.0) /nullif(COALESCE(SUM(costo_campana)::integer, 0), 0) as roi_pct
+    --nullif(COALESCE(SUM(costo_campana),0))::integer as ROMI
+-- roi_pct = Sumas (Ingresos – Costos) / CostoCampanas * 100 y usa nullif para evitar dividir entre cero
+
+FROM pais_ingreso_costo AS p
+LEFT JOIN pais_campanas AS c
+  ON p.clave_territorio = c.clave_territorio
+GROUP BY
+    p.pais,
+    p.clave_territorio
+ORDER BY
+    clave_territorio,ingresos,costos  
